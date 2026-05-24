@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Menu applicazioni - Giorgio Sacchi</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #5b6472;
+      --accent: #2563eb;
+      --accent-2: #0ea5e9;
+      --border: #d8e0ee;
+      --shadow: 0 14px 35px rgba(31, 41, 55, 0.12);
+      --button-bg: #ffffff;
+      --button-text: #1f2937;
+      --danger: #dc2626;
+      --success: #15803d;
+    }
+
+    body.palette-mare { --accent: #2563eb; --accent-2: #0ea5e9; }
+    body.palette-bosco { --accent: #15803d; --accent-2: #65a30d; }
+    body.palette-aurora { --accent: #7c3aed; --accent-2: #db2777; }
+    body.palette-ambra { --accent: #d97706; --accent-2: #ea580c; }
+    body.palette-ardesia { --accent: #475569; --accent-2: #0891b2; }
+
+    body.dark {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #a7b1c2;
+      --border: rgba(148, 163, 184, 0.24);
+      --shadow: 0 14px 35px rgba(0, 0, 0, 0.35);
+      --button-bg: #1f2937;
+      --button-text: #f9fafb;
+      --danger: #fca5a5;
+      --success: #86efac;
+    }
+
+    body.dark.palette-mare { --accent: #93c5fd; --accent-2: #67e8f9; }
+    body.dark.palette-bosco { --accent: #86efac; --accent-2: #bef264; }
+    body.dark.palette-aurora { --accent: #c4b5fd; --accent-2: #f9a8d4; }
+    body.dark.palette-ambra { --accent: #fcd34d; --accent-2: #fdba74; }
+    body.dark.palette-ardesia { --accent: #cbd5e1; --accent-2: #67e8f9; }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 22%, transparent), transparent 32%),
+        radial-gradient(circle at bottom right, color-mix(in srgb, var(--accent-2) 20%, transparent), transparent 36%),
+        var(--bg);
+      padding: 28px 16px;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    body.locked { overflow: hidden; }
+
+    .login-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background:
+        radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 25%, transparent), transparent 34%),
+        radial-gradient(circle at bottom right, color-mix(in srgb, var(--accent-2) 24%, transparent), transparent 36%),
+        var(--bg);
+    }
+
+    .login-screen.hidden { display: none; }
+
+    .login-box {
+      width: min(420px, 100%);
+      padding: 28px;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--card) 94%, transparent);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .login-box h1 {
+      margin: 0 0 10px;
+      font-size: 1.8rem;
+      letter-spacing: -0.03em;
+    }
+
+    .login-box p {
+      margin: 0 0 20px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 13px;
+      font: inherit;
+      color: var(--text);
+      background: var(--button-bg);
+      outline: none;
+    }
+
+    textarea {
+      min-height: 88px;
+      resize: vertical;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent);
+    }
+
+    .login-actions, .password-actions, .admin-actions, .menu-row-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .message {
+      min-height: 22px;
+      margin-top: 12px;
+      font-size: 0.95rem;
+      font-weight: 650;
+    }
+
+    .message.error { color: var(--danger); }
+    .message.success { color: var(--success); }
+
+    .container {
+      width: min(980px, 100%);
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+
+    .theme-toggle, .secondary-button, .primary-button, .danger-button {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--button-bg);
+      color: var(--button-text);
+      padding: 10px 16px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 22px rgba(31, 41, 55, 0.10);
+      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    .primary-button {
+      border-color: transparent;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    }
+
+    .danger-button {
+      color: #ffffff;
+      border-color: transparent;
+      background: linear-gradient(135deg, #dc2626, #f97316);
+    }
+
+    body.dark .primary-button { color: #07111f; }
+
+    .theme-toggle:hover, .secondary-button:hover, .primary-button:hover, .danger-button:hover,
+    .theme-toggle:focus-visible, .secondary-button:focus-visible, .primary-button:focus-visible, .danger-button:focus-visible {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px color-mix(in srgb, var(--accent) 22%, transparent);
+      outline: none;
+    }
+
+    .palette-select {
+      width: auto;
+      min-width: 190px;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+    }
+
+    header h1 span {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: clamp(1.25rem, 3vw, 1.8rem);
+      letter-spacing: 0;
+      color: var(--muted);
+      font-weight: 650;
+    }
+
+    header p {
+      margin: 12px auto 0;
+      max-width: 720px;
+      font-size: 1.05rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 18px;
+    }
+
+    .app-card {
+      display: block;
+      min-height: 155px;
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: color-mix(in srgb, var(--card) 90%, transparent);
+      box-shadow: var(--shadow);
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.25s ease;
+      backdrop-filter: blur(8px);
+    }
+
+    .app-card:hover, .app-card:focus-visible {
+      transform: translateY(-5px);
+      border-color: color-mix(in srgb, var(--accent) 62%, var(--border));
+      box-shadow: 0 20px 42px color-mix(in srgb, var(--accent) 22%, transparent);
+      outline: none;
+    }
+
+    .game-card {
+      border-color: color-mix(in srgb, #f97316 58%, var(--border));
+      background:
+        linear-gradient(135deg, color-mix(in srgb, #f97316 18%, transparent), color-mix(in srgb, #ec4899 14%, transparent)),
+        color-mix(in srgb, var(--card) 90%, transparent);
+    }
+
+    .game-card .app-name {
+      background: linear-gradient(135deg, #f97316, #ec4899);
+      color: #ffffff;
+    }
+
+    .game-card:hover,
+    .game-card:focus-visible {
+      border-color: color-mix(in srgb, #f97316 75%, var(--border));
+      box-shadow: 0 20px 42px rgba(249, 115, 22, 0.24);
+    }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .game-link {
+      display: block;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--button-bg) 88%, transparent);
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 800;
+      text-align: center;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+    }
+
+    .game-link:hover,
+    .game-link:focus-visible {
+      transform: translateY(-3px);
+      border-color: color-mix(in srgb, #f97316 70%, var(--border));
+      box-shadow: 0 14px 28px rgba(249, 115, 22, 0.18);
+      outline: none;
+    }
+
+    .app-name {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 74px;
+      padding: 8px 13px;
+      margin-bottom: 16px;
+      border-radius: 999px;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    body.dark .app-name { color: #07111f; }
+
+    .description {
+      margin: 0;
+      font-size: 1.08rem;
+      line-height: 1.45;
+      color: var(--text);
+      font-weight: 560;
+    }
+
+    .footer {
+      margin-top: 28px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    dialog {
+      width: min(620px, calc(100% - 28px));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: var(--card);
+      color: var(--text);
+      box-shadow: var(--shadow);
+      padding: 0;
+    }
+
+    dialog::backdrop {
+      background: rgba(15, 23, 42, 0.62);
+      backdrop-filter: blur(3px);
+    }
+
+    .dialog-content { padding: 24px; }
+    .dialog-content h2 { margin: 0 0 10px; }
+    .dialog-content p { margin: 0 0 18px; color: var(--muted); line-height: 1.5; }
+    .field-group { margin-bottom: 13px; }
+
+    .admin-panel {
+      display: none;
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .admin-panel.visible { display: block; }
+
+    .custom-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .custom-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--button-bg) 86%, transparent);
+    }
+
+    .custom-item strong { display: block; }
+    .custom-item span { display: block; margin-top: 3px; color: var(--muted); font-size: 0.92rem; }
+
+    .small-note {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 560px) {
+      .topbar, .controls, .login-actions, .password-actions, .admin-actions, .menu-row-actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .controls, .palette-select, .theme-toggle, .secondary-button, .primary-button, .danger-button { width: 100%; }
+      .custom-item { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="locked palette-mare">
+  <section class="login-screen" id="loginScreen" aria-label="Accesso protetto">
+    <div class="login-box">
+      <h1>Accesso protetto</h1>
+      <p>Inserisci la password per aprire il menu delle applicazioni.</p>
+      <div class="field-group">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" autocomplete="current-password" />
+      </div>
+      <div class="login-actions">
+        <button class="primary-button" type="button" id="loginButton">Entra</button>
+      </div>
+      <div class="message" id="loginMessage" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <main class="container" id="mainContent" aria-hidden="true">
+    <div class="topbar">
+      <button class="secondary-button" type="button" id="changePasswordButton">🔐 Cambia password accesso</button>
+      <button class="secondary-button" type="button" id="manageMenuButton">✏️ Gestisci voci menu</button>
+      <div class="controls">
+        <select class="palette-select" id="paletteSelect" aria-label="Scegli palette colori">
+          <option value="mare">Palette mare</option>
+          <option value="bosco">Palette bosco</option>
+          <option value="aurora">Palette aurora</option>
+          <option value="ambra">Palette ambra</option>
+          <option value="ardesia">Palette ardesia</option>
+        </select>
+        <button class="theme-toggle" type="button" id="themeToggle" aria-label="Cambia tema">🌙 Tema scuro</button>
+      </div>
+    </div>
+
+    <header>
+      <h1>Menu applicazioni<br><span>Giorgio Sacchi</span></h1>
+      <p>Accesso rapido alle applicazioni pubblicate su GitHub Pages.</p>
+    </header>
+
+    <section class="grid" id="appGrid" aria-label="Elenco applicazioni"></section>
+    <p class="footer">Pagina indice personale delle applicazioni GitHub Pages.</p>
+  </main>
+
+  <dialog id="passwordDialog">
+    <div class="dialog-content">
+      <h2>Cambia password accesso</h2>
+      <p>Per modificare la password devi conoscere quella precedente. La nuova password verrà memorizzata solo in questo browser.</p>
+      <div class="field-group">
+        <label for="oldPassword">Password precedente</label>
+        <input type="password" id="oldPassword" autocomplete="current-password" />
+      </div>
+      <div class="field-group">
+        <label for="newPassword">Nuova password</label>
+        <input type="password" id="newPassword" autocomplete="new-password" />
+      </div>
+      <div class="field-group">
+        <label for="confirmPassword">Ripeti nuova password</label>
+        <input type="password" id="confirmPassword" autocomplete="new-password" />
+      </div>
+      <div class="password-actions">
+        <button class="primary-button" type="button" id="savePasswordButton">Salva password</button>
+        <button class="secondary-button" type="button" id="closePasswordButton">Annulla</button>
+      </div>
+      <div class="message" id="passwordMessage" aria-live="polite"></div>
+    </div>
+  </dialog>
+
+  <dialog id="menuDialog">
+    <div class="dialog-content">
+      <h2>Gestisci voci menu</h2>
+      <p>Questa sezione permette di aggiungere nuove voci e cancellare quelle introdotte manualmente.</p>
+
+      <div id="adminLoginPanel">
+        <div class="field-group">
+          <label for="adminPassword">Password gestione menu</label>
+          <input type="password" id="adminPassword" autocomplete="current-password" />
+        </div>
+        <div class="admin-actions">
+          <button class="primary-button" type="button" id="adminLoginButton">Accedi alla gestione</button>
+          <button class="secondary-button" type="button" id="closeMenuButton1">Annulla</button>
+        </div>
+        <div class="message" id="adminLoginMessage" aria-live="polite"></div>
+      </div>
+
+      <div class="admin-panel" id="adminPanel">
+        <h3>Aggiungi nuova voce</h3>
+        <div class="field-group">
+          <label for="newMenuName">Nome file</label>
+          <input type="text" id="newMenuName" placeholder="esempio: nuovaapp" />
+          <div class="small-note">Il nome verrà trasformato automaticamente in un link del tipo https://giorgiosacchi.github.io/nome_file/ senza mostrare l’indirizzo nella scheda.</div>
+        </div>
+        <div class="field-group">
+          <label for="newMenuDescription">Descrizione</label>
+          <textarea id="newMenuDescription" placeholder="Descrizione della nuova applicazione"></textarea>
+        </div>
+        <div class="admin-actions">
+          <button class="primary-button" type="button" id="addMenuItemButton">Aggiungi voce</button>
+          <button class="secondary-button" type="button" id="changeAdminPasswordButton">🔐 Cambia password gestione</button>
+        </div>
+        <div class="message" id="menuMessage" aria-live="polite"></div>
+
+        <h3>Voci aggiunte manualmente</h3>
+        <div class="custom-list" id="customMenuList"></div>
+
+        <div class="admin-panel" id="changeAdminPasswordPanel">
+          <h3>Cambia password gestione menu</h3>
+          <div class="field-group">
+            <label for="oldAdminPassword">Password precedente</label>
+            <input type="password" id="oldAdminPassword" autocomplete="current-password" />
+          </div>
+          <div class="field-group">
+            <label for="newAdminPassword">Nuova password</label>
+            <input type="password" id="newAdminPassword" autocomplete="new-password" />
+          </div>
+          <div class="field-group">
+            <label for="confirmAdminPassword">Ripeti nuova password</label>
+            <input type="password" id="confirmAdminPassword" autocomplete="new-password" />
+          </div>
+          <div class="admin-actions">
+            <button class="primary-button" type="button" id="saveAdminPasswordButton">Salva password gestione</button>
+            <button class="secondary-button" type="button" id="cancelAdminPasswordButton">Annulla modifica</button>
+          </div>
+          <div class="message" id="adminPasswordMessage" aria-live="polite"></div>
+        </div>
+
+        <div class="admin-actions">
+          <button class="secondary-button" type="button" id="closeMenuButton2">Chiudi</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="gamesDialog">
+    <div class="dialog-content">
+      <h2>Giochi</h2>
+      <p>Menu delle applicazioni di gioco pubblicate su GitHub Pages.</p>
+      <div class="game-grid" id="gameGrid" aria-label="Elenco giochi"></div>
+      <div class="admin-actions">
+        <button class="secondary-button" type="button" id="closeGamesButton">Chiudi</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    const DEFAULT_PASSWORD = 'ezia';
+    const DEFAULT_ADMIN_PASSWORD = 'giorgio';
+    const PASSWORD_KEY = 'menu-app-password';
+    const ADMIN_PASSWORD_KEY = 'menu-app-admin-password';
+    const THEME_KEY = 'menu-app-theme';
+    const PALETTE_KEY = 'menu-app-palette';
+    const CUSTOM_ITEMS_KEY = 'menu-app-custom-items';
+    const BASE_URL = 'https://giorgiosacchi.github.io/';
+
+    const defaultItems = [
+      { name: 'xdl', description: 'Bridge formati multipli XDL' },
+      { name: 'esami', description: 'Esami università' },
+      { name: 'elezioni', description: 'Analisi dei risultati elettorali' },
+      { name: 'diagnosi', description: 'Analisi e interpretazione diagnosi' },
+      { name: 'pianeti', description: 'Simulazione e dati sui pianeti' },
+      { name: 'mappe', description: 'Mappe interattive' },
+      { name: 'pazienti', description: 'Gestione dati pazienti' },
+      { name: 'atlante', description: 'Atlante interattivo' },
+      { name: 'primi', description: 'Numeri primi' },
+      { name: 'meteo', description: 'Dati e analisi meteo' },
+      { name: 'numeriprimi', description: 'Analisi dei numeri primi' },
+      { name: 'benford', description: 'Analisi secondo la legge di Benford' },
+      { name: 'analisi', description: 'Strumenti di analisi' },
+      { name: 'fegato', description: 'Analisi e risorse sul fegato' },
+      { name: 'lavagna', description: 'Lavagna interattiva' },
+      { name: 'convergenza', description: 'Studio della convergenza' },
+      { name: 'distanza', description: 'Calcolo e analisi delle distanze' },
+      { name: 'dizionario', description: 'Dizionario interattivo' },
+      { name: 'excel', description: 'Strumenti Excel' },
+      { name: 'attestato', description: 'Generazione attestati' },
+      { name: 'statistica', description: 'Strumenti di statistica' },
+      { name: 'clima', description: 'Analisi del clima' },
+      { name: 'qr', description: 'QR code coding/coding' },
+      { name: 'atlas', description: 'Human organ atlas' },
+      { name: 'religioni', description: 'Analisi comparativa religioni' },
+      { name: 'dettatura', description: 'Dettatura di testo' },
+      { name: 'abbr', description: 'Abbreviazioni di termini medici' },
+      { name: 'ic10', description: 'Analisi diagnosi attraverso IC10 (sperimentale)' },
+      { name: 'dbmed', description: 'Interrogazione di database medici' },
+      { name: '3d', description: 'Grafici 3D di funzione' },
+      { name: 'sxl', description: 'Trasferimento porzioni excel attraverso SXL' }
+    ];
+
+    const gameItems = [
+      'pong',
+      'candy',
+      'parole',
+      'break',
+      'cocktail',
+      'tetris',
+      '2048',
+      'cronometro',
+      'ora',
+      'quindici',
+      'hanoi',
+      'biglie',
+      'dama',
+      'tela',
+      'sudoku',
+      'tattoo'
+    ];
+
+
+    const body = document.body;
+    const loginScreen = document.getElementById('loginScreen');
+    const mainContent = document.getElementById('mainContent');
+    const loginPassword = document.getElementById('loginPassword');
+    const loginButton = document.getElementById('loginButton');
+    const loginMessage = document.getElementById('loginMessage');
+    const themeButton = document.getElementById('themeToggle');
+    const paletteSelect = document.getElementById('paletteSelect');
+    const appGrid = document.getElementById('appGrid');
+    const gamesDialog = document.getElementById('gamesDialog');
+    const gameGrid = document.getElementById('gameGrid');
+    const closeGamesButton = document.getElementById('closeGamesButton');
+
+    const changePasswordButton = document.getElementById('changePasswordButton');
+    const passwordDialog = document.getElementById('passwordDialog');
+    const oldPassword = document.getElementById('oldPassword');
+    const newPassword = document.getElementById('newPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+    const savePasswordButton = document.getElementById('savePasswordButton');
+    const closePasswordButton = document.getElementById('closePasswordButton');
+    const passwordMessage = document.getElementById('passwordMessage');
+
+    const manageMenuButton = document.getElementById('manageMenuButton');
+    const menuDialog = document.getElementById('menuDialog');
+    const adminLoginPanel = document.getElementById('adminLoginPanel');
+    const adminPanel = document.getElementById('adminPanel');
+    const adminPassword = document.getElementById('adminPassword');
+    const adminLoginButton = document.getElementById('adminLoginButton');
+    const adminLoginMessage = document.getElementById('adminLoginMessage');
+    const closeMenuButton1 = document.getElementById('closeMenuButton1');
+    const closeMenuButton2 = document.getElementById('closeMenuButton2');
+    const newMenuName = document.getElementById('newMenuName');
+    const newMenuDescription = document.getElementById('newMenuDescription');
+    const addMenuItemButton = document.getElementById('addMenuItemButton');
+    const menuMessage = document.getElementById('menuMessage');
+    const customMenuList = document.getElementById('customMenuList');
+
+    const changeAdminPasswordButton = document.getElementById('changeAdminPasswordButton');
+    const changeAdminPasswordPanel = document.getElementById('changeAdminPasswordPanel');
+    const oldAdminPassword = document.getElementById('oldAdminPassword');
+    const newAdminPassword = document.getElementById('newAdminPassword');
+    const confirmAdminPassword = document.getElementById('confirmAdminPassword');
+    const saveAdminPasswordButton = document.getElementById('saveAdminPasswordButton');
+    const cancelAdminPasswordButton = document.getElementById('cancelAdminPasswordButton');
+    const adminPasswordMessage = document.getElementById('adminPasswordMessage');
+
+    function getStoredPassword() {
+      return localStorage.getItem(PASSWORD_KEY) || DEFAULT_PASSWORD;
+    }
+
+    function getStoredAdminPassword() {
+      return localStorage.getItem(ADMIN_PASSWORD_KEY) || DEFAULT_ADMIN_PASSWORD;
+    }
+
+    function setMessage(element, text, type) {
+      element.textContent = text;
+      element.className = 'message' + (type ? ' ' + type : '');
+    }
+
+    function normalizeName(name) {
+      return name.trim().replace(/^\/+|\/+$/g, '');
+    }
+
+    function buildUrl(name) {
+      return BASE_URL + encodeURI(normalizeName(name)) + '/';
+    }
+
+    function getCustomItems() {
+      try {
+        const items = JSON.parse(localStorage.getItem(CUSTOM_ITEMS_KEY) || '[]');
+        return Array.isArray(items) ? items : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveCustomItems(items) {
+      localStorage.setItem(CUSTOM_ITEMS_KEY, JSON.stringify(items));
+    }
+
+    function createCard(item) {
+      const link = document.createElement('a');
+      link.className = 'app-card';
+      link.href = buildUrl(item.name);
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+
+      const name = document.createElement('span');
+      name.className = 'app-name';
+      name.textContent = item.name;
+
+      const description = document.createElement('p');
+      description.className = 'description';
+      description.textContent = item.description;
+
+      link.append(name, description);
+      return link;
+    }
+
+    function createGamesCard() {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'app-card game-card';
+      button.setAttribute('aria-haspopup', 'dialog');
+
+      const name = document.createElement('span');
+      name.className = 'app-name';
+      name.textContent = 'giochi';
+
+      const description = document.createElement('p');
+      description.className = 'description';
+      description.textContent = 'Menu delle applicazioni di gioco';
+
+      button.append(name, description);
+      button.addEventListener('click', () => {
+        renderGames();
+        gamesDialog.showModal();
+      });
+
+      return button;
+    }
+
+    function renderGames() {
+      gameGrid.innerHTML = '';
+      gameItems.forEach(game => {
+        const link = document.createElement('a');
+        link.className = 'game-link';
+        link.href = buildUrl(game);
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = game;
+        gameGrid.appendChild(link);
+      });
+    }
+
+    function renderMenu() {
+      appGrid.innerHTML = '';
+      appGrid.appendChild(createGamesCard());
+      [...defaultItems, ...getCustomItems()].forEach(item => appGrid.appendChild(createCard(item)));
+    }
+
+    function renderCustomList() {
+      const items = getCustomItems();
+      customMenuList.innerHTML = '';
+
+      if (items.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'small-note';
+        empty.textContent = 'Non ci sono ancora voci aggiunte manualmente.';
+        customMenuList.appendChild(empty);
+        return;
+      }
+
+      items.forEach((item, index) => {
+        const row = document.createElement('div');
+        row.className = 'custom-item';
+
+        const info = document.createElement('div');
+        const title = document.createElement('strong');
+        title.textContent = item.name;
+        const desc = document.createElement('span');
+        desc.textContent = item.description;
+        info.append(title, desc);
+
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'danger-button';
+        del.textContent = 'Cancella';
+        del.addEventListener('click', () => {
+          if (!confirm('Vuoi cancellare la voce "' + item.name + '"?')) return;
+          const updated = getCustomItems();
+          updated.splice(index, 1);
+          saveCustomItems(updated);
+          renderMenu();
+          renderCustomList();
+          setMessage(menuMessage, 'Voce cancellata.', 'success');
+        });
+
+        row.append(info, del);
+        customMenuList.appendChild(row);
+      });
+    }
+
+    function unlockPage() {
+      loginScreen.classList.add('hidden');
+      body.classList.remove('locked');
+      mainContent.setAttribute('aria-hidden', 'false');
+    }
+
+    function attemptLogin() {
+      if (loginPassword.value === getStoredPassword()) {
+        setMessage(loginMessage, '', '');
+        loginPassword.value = '';
+        unlockPage();
+      } else {
+        setMessage(loginMessage, 'Password non corretta.', 'error');
+        loginPassword.focus();
+        loginPassword.select();
+      }
+    }
+
+    function applyTheme(theme) {
+      const isDark = theme === 'dark';
+      body.classList.toggle('dark', isDark);
+      themeButton.textContent = isDark ? '☀️ Tema chiaro' : '🌙 Tema scuro';
+      localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
+    }
+
+    function applyPalette(palette) {
+      const allowed = ['mare', 'bosco', 'aurora', 'ambra', 'ardesia'];
+      const selected = allowed.includes(palette) ? palette : 'mare';
+      allowed.forEach(name => body.classList.remove('palette-' + name));
+      body.classList.add('palette-' + selected);
+      paletteSelect.value = selected;
+      localStorage.setItem(PALETTE_KEY, selected);
+    }
+
+    loginButton.addEventListener('click', attemptLogin);
+    loginPassword.addEventListener('keydown', event => { if (event.key === 'Enter') attemptLogin(); });
+
+    themeButton.addEventListener('click', () => applyTheme(body.classList.contains('dark') ? 'light' : 'dark'));
+    paletteSelect.addEventListener('change', () => applyPalette(paletteSelect.value));
+
+    changePasswordButton.addEventListener('click', () => {
+      oldPassword.value = '';
+      newPassword.value = '';
+      confirmPassword.value = '';
+      setMessage(passwordMessage, '', '');
+      passwordDialog.showModal();
+      oldPassword.focus();
+    });
+
+    closePasswordButton.addEventListener('click', () => passwordDialog.close());
+
+    savePasswordButton.addEventListener('click', () => {
+      if (oldPassword.value !== getStoredPassword()) {
+        setMessage(passwordMessage, 'La password precedente non è corretta.', 'error');
+        oldPassword.focus();
+        oldPassword.select();
+        return;
+      }
+      if (newPassword.value.length < 3) {
+        setMessage(passwordMessage, 'La nuova password deve contenere almeno 3 caratteri.', 'error');
+        newPassword.focus();
+        return;
+      }
+      if (newPassword.value !== confirmPassword.value) {
+        setMessage(passwordMessage, 'Le due nuove password non coincidono.', 'error');
+        confirmPassword.focus();
+        confirmPassword.select();
+        return;
+      }
+      localStorage.setItem(PASSWORD_KEY, newPassword.value);
+      setMessage(passwordMessage, 'Password modificata correttamente.', 'success');
+      oldPassword.value = '';
+      newPassword.value = '';
+      confirmPassword.value = '';
+      setTimeout(() => passwordDialog.close(), 850);
+    });
+
+    passwordDialog.addEventListener('keydown', event => { if (event.key === 'Enter') savePasswordButton.click(); });
+
+    manageMenuButton.addEventListener('click', () => {
+      adminPassword.value = '';
+      setMessage(adminLoginMessage, '', '');
+      setMessage(menuMessage, '', '');
+      setMessage(adminPasswordMessage, '', '');
+      adminLoginPanel.style.display = 'block';
+      adminPanel.classList.remove('visible');
+      changeAdminPasswordPanel.classList.remove('visible');
+      menuDialog.showModal();
+      adminPassword.focus();
+    });
+
+    closeMenuButton1.addEventListener('click', () => menuDialog.close());
+    closeMenuButton2.addEventListener('click', () => menuDialog.close());
+
+    adminLoginButton.addEventListener('click', () => {
+      if (adminPassword.value === getStoredAdminPassword()) {
+        adminPassword.value = '';
+        setMessage(adminLoginMessage, '', '');
+        adminLoginPanel.style.display = 'none';
+        adminPanel.classList.add('visible');
+        renderCustomList();
+        newMenuName.focus();
+      } else {
+        setMessage(adminLoginMessage, 'Password gestione menu non corretta.', 'error');
+        adminPassword.focus();
+        adminPassword.select();
+      }
+    });
+
+    adminPassword.addEventListener('keydown', event => { if (event.key === 'Enter') adminLoginButton.click(); });
+
+    addMenuItemButton.addEventListener('click', () => {
+      const name = normalizeName(newMenuName.value);
+      const description = newMenuDescription.value.trim();
+      const allNames = [...defaultItems, ...getCustomItems()].map(item => item.name.toLowerCase());
+
+      if (!name) {
+        setMessage(menuMessage, 'Inserisci il nome file.', 'error');
+        newMenuName.focus();
+        return;
+      }
+      if (name.includes(' ')) {
+        setMessage(menuMessage, 'Il nome file non deve contenere spazi.', 'error');
+        newMenuName.focus();
+        return;
+      }
+      if (!description) {
+        setMessage(menuMessage, 'Inserisci una descrizione.', 'error');
+        newMenuDescription.focus();
+        return;
+      }
+      if (allNames.includes(name.toLowerCase())) {
+        setMessage(menuMessage, 'Questa voce è già presente nel menu.', 'error');
+        newMenuName.focus();
+        newMenuName.select();
+        return;
+      }
+
+      const items = getCustomItems();
+      items.push({ name, description });
+      saveCustomItems(items);
+      renderMenu();
+      renderCustomList();
+      newMenuName.value = '';
+      newMenuDescription.value = '';
+      setMessage(menuMessage, 'Voce aggiunta correttamente.', 'success');
+      newMenuName.focus();
+    });
+
+    changeAdminPasswordButton.addEventListener('click', () => {
+      oldAdminPassword.value = '';
+      newAdminPassword.value = '';
+      confirmAdminPassword.value = '';
+      setMessage(adminPasswordMessage, '', '');
+      changeAdminPasswordPanel.classList.add('visible');
+      oldAdminPassword.focus();
+    });
+
+    cancelAdminPasswordButton.addEventListener('click', () => {
+      changeAdminPasswordPanel.classList.remove('visible');
+      setMessage(adminPasswordMessage, '', '');
+    });
+
+    saveAdminPasswordButton.addEventListener('click', () => {
+      if (oldAdminPassword.value !== getStoredAdminPassword()) {
+        setMessage(adminPasswordMessage, 'La password precedente di gestione non è corretta.', 'error');
+        oldAdminPassword.focus();
+        oldAdminPassword.select();
+        return;
+      }
+      if (newAdminPassword.value.length < 3) {
+        setMessage(adminPasswordMessage, 'La nuova password deve contenere almeno 3 caratteri.', 'error');
+        newAdminPassword.focus();
+        return;
+      }
+      if (newAdminPassword.value !== confirmAdminPassword.value) {
+        setMessage(adminPasswordMessage, 'Le due nuove password non coincidono.', 'error');
+        confirmAdminPassword.focus();
+        confirmAdminPassword.select();
+        return;
+      }
+      localStorage.setItem(ADMIN_PASSWORD_KEY, newAdminPassword.value);
+      oldAdminPassword.value = '';
+      newAdminPassword.value = '';
+      confirmAdminPassword.value = '';
+      setMessage(adminPasswordMessage, 'Password gestione menu modificata correttamente.', 'success');
+    });
+
+    closeGamesButton.addEventListener('click', () => gamesDialog.close());
+
+    applyTheme(localStorage.getItem(THEME_KEY) || 'light');
+    applyPalette(localStorage.getItem(PALETTE_KEY) || 'mare');
+    renderMenu();
+    loginPassword.focus();
+  </script>
+</body>
+</html>
